@@ -49,14 +49,16 @@ class CoreControl():
  def compute_return_direction(self, incoming_direction):
     return (-incoming_direction[0], -incoming_direction[1]) 
 
-last_puck_position = (450, 10)
-current_puck_position = (450, 20)
+last_puck_position = (450, 80)
+current_puck_position = (450, 80)
 mallet_pos = (350, 50)
 
 core_control = CoreControl()
 core_control.last_puck_position = last_puck_position
 reachable_point, direction, time = core_control.find_reachable_intercept_point(current_puck_position)
 
+udp_connector = UDPConnector()
+udp_connector.send_coordinates()(reachable_point[0], reachable_point[1])
 
 if reachable_point:
     print(f"Erreichbarer Punkt: {reachable_point}, Richtung: {direction}, Zeit: {time}")
