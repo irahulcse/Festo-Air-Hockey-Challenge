@@ -21,7 +21,6 @@ class UDPConnector(AbstractContextManager):
     _FMT  = '<BB6xdddd'
     _SIZE = struct.calcsize(_FMT)
 
-    # ----------------------------------------------------------------- setup
     def __init__(self, plc_ip: str = '192.168.4.201', plc_port: int = 3001) -> None:
         self._plc_addr = (plc_ip, plc_port)
 
@@ -44,7 +43,6 @@ class UDPConnector(AbstractContextManager):
         self._velocity     = float(velocity)
         self._acceleration = float(acceleration)
 
-    # --------------------------------------------------------------- runtime
     def send_coordinates(self, x: float, y: float) -> None:
         """Fire one datagram at the PLC (stateless, no retry)."""
         payload = struct.pack(UDPConnector._FMT,
@@ -56,13 +54,11 @@ class UDPConnector(AbstractContextManager):
         if self._sock:
             self._sock.sendto(payload, self._plc_addr)
 
-    # -------------------------------------------------------------- teardown
     def close(self) -> None:
         if self._sock:
             self._sock.close()
             self._sock = None
 
-    # context‑manager hooks
     def __enter__(self):
         return self
 

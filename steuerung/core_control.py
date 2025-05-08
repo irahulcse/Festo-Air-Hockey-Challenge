@@ -9,7 +9,6 @@ class CoreControl:
         self.max_speed          = 1700.0                 # mm / s
         self.striker_speed      = 0.5 * self.max_speed   # mm / s
 
-    # ------------------------------------------------ physics helpers
     def _normalize(self, v):
         mag = math.hypot(*v)
         return (v[0]/mag, v[1]/mag) if mag else (0.0, 0.0)
@@ -17,7 +16,6 @@ class CoreControl:
     def _field_contains(self, x, y):
         return -5 <= x <= 481 and -4 <= y <= 483         # mm
 
-    # ------------------------------------------------ public helpers
     def compute_direction_and_speed(self, puck_pos):
         dx = puck_pos[0] - self.last_puck_position[0]
         dy = puck_pos[1] - self.last_puck_position[1]
@@ -46,7 +44,6 @@ class CoreControl:
     def compute_return_direction(self, incoming_direction):
         return (-incoming_direction[0], -incoming_direction[1])
 
-# ------------------------------------------------------------------- demo loop
 if __name__ == '__main__':
     last_puck_position     = (450.0, 80.0)
     current_puck_position  = (450.0, 80.0)
