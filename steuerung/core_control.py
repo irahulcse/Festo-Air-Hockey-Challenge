@@ -1,6 +1,6 @@
 # control_loop.py
 import math
-from steuerung.core_control import UDPConnector        #   ← file from previous message
+from UDP_connector import UDPConnector        #   ← file from previous message
 
 class CoreControl:
     def __init__(self):
