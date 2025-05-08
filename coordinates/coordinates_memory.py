@@ -12,7 +12,7 @@ class CoordinateBuffer:
             print("Invalid coordinate")
 
     def latest(self, anz):
-        return self.buffer[-anz:] if self.buffer else None
+        return list(self.buffer)[-anz:] if self.buffer else None
 
     def get_all(self):
         return list(self.buffer)
