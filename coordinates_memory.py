@@ -11,8 +11,8 @@ class CoordinateBuffer:
         else:
             print("Invalid coordinate")
 
-    def last_three(self):
-        return self.buffer[-3:] if self.buffer else None
+    def latest(self, anz):
+        return self.buffer[-anz:] if self.buffer else None
 
     def get_all(self):
         return list(self.buffer)
