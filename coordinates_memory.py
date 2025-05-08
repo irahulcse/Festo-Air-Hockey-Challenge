@@ -7,6 +7,9 @@ class CoordinateBuffer:
     def add(self, x, y):
         self.buffer.append((x, y))
 
+    def last_three(self):
+        return self.buffer[-3:] if self.buffer else None
+
     def get_all(self):
         return list(self.buffer)
 
