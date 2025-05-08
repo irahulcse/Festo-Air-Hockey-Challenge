@@ -1,8 +1,8 @@
 def load_camera_action():
     import numpy as np
     import cv2 as cv
-    import coordinates_transformation
-    import coordinates_memory
+    from coordinates import coordinates_transformation
+    from coordinates import coordinates_memory
 
     memory = coordinates_memory.CoordinateBuffer()
 
