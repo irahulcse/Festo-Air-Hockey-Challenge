@@ -1,10 +1,11 @@
-def load_camera_action():
+from coordinates import coordinates_transformation
+
+
+def load_camera_action(memory):
     import numpy as np
     import cv2 as cv
-    from coordinates import coordinates_transformation
-    from coordinates import coordinates_memory
-
-    memory = coordinates_memory.CoordinateBuffer()
+    import coordinates.coordinates_transformation
+    import coordinates.coordinates_memory
 
     cap = cv.VideoCapture(0)
     if not cap.isOpened():
