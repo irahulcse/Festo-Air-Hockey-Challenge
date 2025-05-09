@@ -69,45 +69,4 @@ class MovementController:
             #plc.setpoints(velocity=1.2, acceleration=0.8)
             plc.send_coordinates(*target)
 
-# main_test.py
-from movement_controller import MovementController  # or your chosen name
-import time
 
-def mock_camera_data_sequence():
-    # Example: list of (puck_x, puck_y) positions
-    return [
-        (300.0, 200.0),
-        (310.0, 210.0),
-        (320.0, 220.0),
-        (330.0, 230.0),
-        (340.0, 240.0),
-        (350.0, 250.0),
-    ]
-
-def main():
-    controller = MovementController()  # or InterceptionPlanner()
-
-    puck_positions = mock_camera_data_sequence()
-    striker_position = (350.0, 50.0)  # Example starting striker position
-
-    # Simulate your control loop
-    for i in range(1, len(puck_positions)):
-        puck_previous = puck_positions[i - 1]
-        puck_current = puck_positions[i]
-
-        print(f"\nFrame {i}:")
-        print(f"Puck prev: {puck_previous}, current: {puck_current}")
-
-        controller.run_decision_step(
-            puck_current=puck_current,
-            puck_previous=puck_previous,
-            striker_position=striker_position
-        )
-
-        # Simulate striker movement (optional for test)
-        striker_position = puck_current  # pretend striker tracks puck for now
-
-        time.sleep(0.1)  # Simulate frame rate
-
-if __name__ == "__main__":
-    main()
