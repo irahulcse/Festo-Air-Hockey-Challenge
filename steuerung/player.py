@@ -36,5 +36,3 @@ class Player:
     def move_to_hit(self, puck_position):
         # Move to hit the puck toward the opponent's goal
         pass
-
-class 

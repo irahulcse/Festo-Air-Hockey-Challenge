@@ -1,9 +1,13 @@
-from storage import Storage
+from coordinates.coordinates_memory import CoordinateBuffer
 import numpy as np
 
-def detect_attack_from_opponent(storage):
-    three_latest_points = storage.get_latest_puck_points(3)
-    
+def detect_attack_from_opponent(memory: CoordinateBuffer):
+    three_latest_points = memory.latest(3)
+    if not three_latest_points or len(three_latest_points) < 3:
+        return False
+
+    three_latest_points = np.array(three_latest_points)
+
     x_array = three_latest_points[:,0]
     y_array = three_latest_points[:,1]
 
