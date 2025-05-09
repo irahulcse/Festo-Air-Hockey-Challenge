@@ -2,15 +2,15 @@ import numpy as np
 
 from coordinates import coordinates_transformation
 from coordinates.coordinates_memory import CoordinateBuffer
-from steuerung.attack_detection import attack_detection
+from steuerung.attack_detection import detect_attack
 from steuerung.movement_controller import MovementController
 import time
 import cv2 as cv
 
 def main():
 
+    striker_position = (10,230)
     memory = CoordinateBuffer()
- #   controller = CoreControl()
     controller = MovementController()
 
     cap = cv.VideoCapture(0)
@@ -52,15 +52,15 @@ def main():
             striker_x, striker_y = [], []
                 # Reaktionslogik: Blocken?
             puck_current = memory.latest(1)[0]
-            puck_current = memory.latest(2)[0]
-            attack = attack_detection.detect_attack(memory, puck_current, puck_current)
+            puck_previous = memory.latest(2)[0]
+            attack = detect_attack(memory, puck_current, puck_previous)
             if attack:
                 print("\u26a0\ufe0f Attack detected!")
             else:
                 print("No attack.")
 
             controller.run_decision_step(
-                puck_current, puck_current, striker_position
+                puck_current, puck_previous, striker_position
             )
 
             puck_x.append(puck_current[0])

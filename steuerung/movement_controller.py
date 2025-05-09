@@ -1,5 +1,5 @@
 import math
-from UDP_connector import UDPConnector
+from steuerung.UDP_connector import UDPConnector
 
 class MovementController:
     def __init__(self, striker_speed=850): #50% override
@@ -40,6 +40,7 @@ class MovementController:
     def predict_defense_intercept(self, puck_current, puck_previous):
         dx = puck_current[0] - puck_previous[0]
         dy = puck_current[1] - puck_previous[1]
+        goal_line_x = 150.0
         dt = 10.0 / 300.0
         vx = dx / dt
         vy = dy / dt
@@ -47,7 +48,6 @@ class MovementController:
         if abs(vx) < 1e-5:
             predicted_y = puck_current[1]
         else:
-            goal_line_x = 350.0
             time_to_goal = (goal_line_x - puck_current[0]) / vx
             predicted_y = puck_current[1] + vy * time_to_goal
 
