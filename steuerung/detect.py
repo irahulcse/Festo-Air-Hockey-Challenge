@@ -1,5 +1,7 @@
-from storage import Storage
 import numpy as np
+
+from coordinates.coordinates_memory import CoordinateBuffer
+
 
 def detect_attack_from_opponent(memory: CoordinateBuffer):
     three_latest_points = memory.latest(3)
