@@ -3,23 +3,29 @@ import numpy as np
 from coordinates import coordinates_transformation
 from coordinates.coordinates_memory import CoordinateBuffer
 from steuerung.attack_detection import detect_attack
-from steuerung.movement_controller import MovementController
+from steuerung.movement_controller import AirHockeyDefender
 import time
 import cv2 as cv
 
 def main():
-
+    # Configure defender with proper parameters
+    controller = AirHockeyDefender(
+        table_width=481,  # From field constraints
+        table_height=483, 
+        arm_speed=1700,   # Max speed from core_control.py
+        defense_line=50   # Safe defense position
+    )
+    
     striker_position = (10,230)
     memory = CoordinateBuffer()
-    controller = MovementController()
-
+    
     cap = cv.VideoCapture(0)
     if not cap.isOpened():
         print("Cannot open camera")
         exit()
     while True:
         # Capture frame-by-frame
-        ret, frame = cap.read()
+        ret, frame = cap.read() 
 
         # if frame is read correctly ret is True
         if not ret:
@@ -67,6 +73,7 @@ def main():
             puck_y.append(puck_current[1])
             striker_x.append(striker_position[0])
             striker_y.append(striker_position[1])
+
             time.sleep(0.1)
 
 
@@ -83,7 +90,6 @@ def main():
     # When everything done, release the capture
     cap.release()
     cv.destroyAllWindows()
-
 
 
 

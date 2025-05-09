@@ -1,5 +1,6 @@
 import math
-from steuerung.UDP_connector import UDPConnector
+import numpy as np
+import matplotlib.pyplot as plt
 
 class AirHockeyDefender:
     def __init__(self, table_width, table_height, arm_speed, defense_line, max_arm_x=None):
@@ -18,7 +19,7 @@ class AirHockeyDefender:
         self.arm_speed = arm_speed
         self.defense_line = defense_line
         self.max_arm_x = max_arm_x if max_arm_x else defense_line + 100
-        self.safety_margin = 30  # minimum distance from walls
+        self.safety_margin = 50  # minimum distance from walls
         
         # For visualization and debugging
         self.debug_mode = False
@@ -129,7 +130,6 @@ class AirHockeyDefender:
         
         if not intercept_candidates:
             # Return to field center (regardless of dimensions)
-            
             return (self.defense_line, self.table_height/2), None, None
             
         return intercept_candidates[0][0], intercept_candidates[0][1], None
@@ -199,26 +199,163 @@ class AirHockeyDefender:
         target_x = max(self.defense_line - 2, min(target_x, self.max_arm_x))
         
         return (target_x, target_y)
+
+    def visualize_scenario(self, puck_prev_pos, puck_current_pos, arm_pos, target_pos, trajectory=None):
+        """
+        Visualize scenario with current positions and predicted trajectory
+        
+        Parameters:
+        puck_prev_pos: previous puck position
+        puck_current_pos: current puck position
+        arm_pos: current arm position
+        target_pos: target arm position
+        trajectory: list of predicted trajectory points (optional)
+        """
+        plt.figure(figsize=(12, 6))
+        
+        # Draw playing field
+        plt.plot([0, self.table_width, self.table_width, 0, 0], 
+                 [0, 0, self.table_height, self.table_height, 0], 'k-', linewidth=2)
+        
+        # Draw defense line
+        plt.plot([self.defense_line, self.defense_line], [0, self.table_height], 'r--', linewidth=2)
+        
+        # Draw center line (if any)
+        midline_x = self.table_width / 2
+        plt.plot([midline_x, midline_x], [0, self.table_height], 'k:', linewidth=1)
+        
+        # Draw trajectory if provided
+        if trajectory and len(trajectory) > 0:
+            traj_x = [point[0] for point in trajectory]
+            traj_y = [point[1] for point in trajectory]
+            plt.plot(traj_x, traj_y, 'b-', alpha=0.5, label='Predicted trajectory')
+            
+            # Mark important points on trajectory
+            # Start and end
+            plt.plot(traj_x[0], traj_y[0], 'bo', alpha=0.5)
+            plt.plot(traj_x[-1], traj_y[-1], 'bo', alpha=0.5)
+            
+            # Mark bounce points if any
+            for i in range(1, len(trajectory)-1):
+                prev_dir = (trajectory[i][1] - trajectory[i-1][1])
+                next_dir = (trajectory[i+1][1] - trajectory[i][1])
+                if prev_dir * next_dir < 0:  # Change in Y direction
+                    plt.plot(trajectory[i][0], trajectory[i][1], 'bo', markersize=8)
+                    plt.text(trajectory[i][0]+10, trajectory[i][1]+10, f'Bounce', fontsize=9)
+        
+        # Draw puck velocity vector
+        dx = puck_current_pos[0] - puck_prev_pos[0]
+        dy = puck_current_pos[1] - puck_prev_pos[1]
+        speed_scale = 0.2  # Scale factor for velocity vector display
+        plt.arrow(puck_current_pos[0], puck_current_pos[1], 
+                  dx * speed_scale, dy * speed_scale, 
+                  head_width=20, head_length=20, fc='blue', ec='blue', alpha=0.7)
+        
+        # Draw puck (previous and current positions)
+        plt.plot(puck_prev_pos[0], puck_prev_pos[1], 'bo', markersize=10, label='Previous puck position')
+        plt.plot(puck_current_pos[0], puck_current_pos[1], 'go', markersize=10, label='Current puck position')
+        
+        # Draw arm (current and target positions)
+        plt.plot(arm_pos[0], arm_pos[1], 'ro', markersize=10, label='Current arm position')
+        plt.plot(target_pos[0], target_pos[1], 'mo', markersize=10, label='Target arm position')
+        
+        # Connect current and target arm positions with a line
+        plt.plot([arm_pos[0], target_pos[0]], [arm_pos[1], target_pos[1]], 'k-', alpha=0.5)
+        
+        # Add explanatory texts
+        plt.text(puck_current_pos[0]+30, puck_current_pos[1], f'Puck ({puck_current_pos[0]:.0f}, {puck_current_pos[1]:.0f})', fontsize=9)
+        plt.text(arm_pos[0]+30, arm_pos[1], f'Arm ({arm_pos[0]:.0f}, {arm_pos[1]:.0f})', fontsize=9)
+        plt.text(target_pos[0]+30, target_pos[1], f'Target ({target_pos[0]:.0f}, {target_pos[1]:.0f})', fontsize=9)
+        
+        # Configure plot
+        plt.xlim(-100, self.table_width + 100)
+        plt.ylim(-100, self.table_height + 100)
+        plt.grid(True, alpha=0.3)
+        plt.legend(loc='upper right')
+        plt.title('Air Hockey Scenario Visualization')
+        plt.xlabel('X (mm)')
+        plt.ylabel('Y (mm)')
+        
+        return plt.gcf()  # Return created figure
      
 
-    def run_decision_step(self, puck_current, puck_previous, striker_position):
-        target = self.calculate_optimal_position(
-            puck_previous, puck_current, striker_position, dt= 1/30
-        )
-        if target:
-            return target
-            
+def test_defender():
+    """
+    Test defense system with various scenarios and visualize results
+    """
+    # Table and arm parameters
+    TABLE_WIDTH = 1600  # mm
+    TABLE_HEIGHT = 800  # mm
+    ARM_SPEED = 1500    # mm/s
+    DEFENSE_LINE = 450  # mm
+    
+    defender = AirHockeyDefender(TABLE_WIDTH, TABLE_HEIGHT, ARM_SPEED, DEFENSE_LINE)
+    
+    test_scenarios = [
+        {
+            "name": "Straight movement to goal",
+            "puck_prev": (800, 400),
+            "puck_current": (750, 400),
+            "arm_pos": (200, 300)
+        },
+        {
+            "name": "Movement at an angle",
+            "puck_prev": (1000, 300),
+            "puck_current": (950, 350),
+            "arm_pos": (200, 200)
+        },
+        {
+            "name": "Arm far from interception point",
+            "puck_prev": (800, 700),
+            "puck_current": (750, 650),
+            "arm_pos": (200, 100)
+        },
+        {
+            "name": "Puck moving away from goal",
+            "puck_prev": (300, 400),
+            "puck_current": (350, 400),
+            "arm_pos": (200, 400)
+        },
+        {
+            "name": "Real example",
+            "puck_prev": (623, 258),
+            "puck_current": (577, 232),
+            "arm_pos": (136, 252)
+        }
+    ]
+    
+    dt = 1/30  # 30 FPS camera
+    
+    for scenario in test_scenarios:
+        print(f"\n=== Scenario: {scenario['name']} ===")
+        puck_prev = scenario["puck_prev"]
+        puck_current = scenario["puck_current"]
+        arm_pos = scenario["arm_pos"]
         
-    '''
-        if reachable:
-            print(f'Intercept at {reachable} in {t:.2f}s, dir {direction}')
-            target = reachable
-        else:
-            print('No reachable point found. Switching to defense mode.')
-            target = self.predict_defense_intercept(puck_current, puck_previous)
-    '''
-    with UDPConnector('192.168.4.201', 3001) as plc:
-            #plc.setpoints(velocity=1.2, acceleration=0.8)
-        plc.send_coordinates(target)
+        # Calculate puck velocity vector (for trajectory prediction)
+        velocity, speed = defender.calculate_puck_vector(puck_prev, puck_current, dt)
+        
+        # Predict trajectory for visualization
+        trajectory = defender.predict_trajectory(puck_current, velocity)
+        
+        # Get target position
+        target_pos = defender.calculate_optimal_position(puck_prev, puck_current, arm_pos, dt)
+        
+        # Print information
+        print(f"Previous puck position: {puck_prev}")
+        print(f"Current puck position: {puck_current}")
+        print(f"Current arm position: {arm_pos}")
+        print(f"Target arm position: {target_pos}")
+        
+        # Create visualization
+        defender.visualize_scenario(puck_prev, puck_current, arm_pos, target_pos, trajectory)
+        
+        # Save or show plot
+        plt.savefig(f"scenario_{scenario['name'].replace(' ', '_')}.png", dpi=100, bbox_inches='tight')
+        plt.close()  # Close current plot before creating the next one
+        
+    print("\nVisualizations saved as PNG files")
 
 
+if __name__ == "__main__":
+    test_defender()
