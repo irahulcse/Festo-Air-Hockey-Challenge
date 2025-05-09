@@ -67,8 +67,6 @@ def main():
             puck_y.append(puck_current[1])
             striker_x.append(striker_position[0])
             striker_y.append(striker_position[1])
-
-            striker_position = puck_current
             time.sleep(0.1)
 
 

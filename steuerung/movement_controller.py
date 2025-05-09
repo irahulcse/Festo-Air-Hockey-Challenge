@@ -68,5 +68,6 @@ class MovementController:
         with UDPConnector('192.168.4.201', 3001) as plc:
             #plc.setpoints(velocity=1.2, acceleration=0.8)
             plc.send_coordinates(*target)
+            plc.send_coordinates(10,230)
 
 
