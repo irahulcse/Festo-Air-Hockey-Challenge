@@ -2,7 +2,8 @@ import numpy as np
 
 from coordinates import coordinates_transformation
 from coordinates.coordinates_memory import CoordinateBuffer
-from steuerung.detect import detect_attack_from_opponent
+from steuerung.attack_detection import attack_detection
+from steuerung.movement_controller import MovementController
 import time
 import cv2 as cv
 
@@ -10,6 +11,7 @@ def main():
 
     memory = CoordinateBuffer()
  #   controller = CoreControl()
+    controller = MovementController()
 
     cap = cv.VideoCapture(0)
     if not cap.isOpened():
@@ -40,17 +42,36 @@ def main():
                 print(robot_x, robot_y)
                 memory.add(robot_x, robot_y)
                 # circle center
-                cv.circle(gray, center, 1, (0, 100, 100), 3)
+                #cv.circle(gray, center, 1, (0, 100, 100), 3)
                 # circle outline
-                radius = i[2]
-                cv.circle(gray, center, radius, (255, 0, 255), 3)
+                #radius = i[2]
+                #cv.circle(gray, center, radius, (255, 0, 255), 3)
                 # Angriff erkennen
-                if detect_attack_from_opponent(memory):
-                    print("Angriff erkannt!")
-                    time.sleep(3)  # 30–40 FPS Ziel
 
-                    # Reaktionslogik: Blocken?
-                    puck_pos = memory.latest(1)
+            puck_x, puck_y = [], []
+            striker_x, striker_y = [], []
+                # Reaktionslogik: Blocken?
+            puck_current = memory.latest(1)[0]
+            puck_current = memory.latest(2)[0]
+            attack = attack_detection.detect_attack(memory, puck_current, puck_current)
+            if attack:
+                print("\u26a0\ufe0f Attack detected!")
+            else:
+                print("No attack.")
+
+            controller.run_decision_step(
+                puck_current, puck_current, striker_position
+            )
+
+            puck_x.append(puck_current[0])
+            puck_y.append(puck_current[1])
+            striker_x.append(striker_position[0])
+            striker_y.append(striker_position[1])
+
+            striker_position = puck_current
+            time.sleep(0.1)
+
+
             #                if puck_pos:
             #                    intercept, direction, t = controller.find_reachable_intercept_point(puck_pos[0])
             #                    if intercept:
