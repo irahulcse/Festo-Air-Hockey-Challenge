@@ -9,7 +9,7 @@ import cv2 as cv
 
 def main():
 
-    striker_position = (10,230)
+    striker_position = (7,245)
     memory = CoordinateBuffer()
     controller = MovementController()
 
