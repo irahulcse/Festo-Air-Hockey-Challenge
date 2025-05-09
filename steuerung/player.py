@@ -37,4 +37,3 @@ class Player:
         # Move to hit the puck toward the opponent's goal
         pass
 
-class 
