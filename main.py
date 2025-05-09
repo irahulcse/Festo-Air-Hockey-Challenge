@@ -30,6 +30,7 @@ def main():
         gray_no_noise = cv.GaussianBlur(gray, (9, 9), 2)
 
         rows = gray.shape[0]
+        # Detect circles in the image  
         circles = cv.HoughCircles(gray_no_noise, cv.HOUGH_GRADIENT, 1, rows / 8,
                                   param1=100, param2=30,
                                   minRadius=30, maxRadius=40)
@@ -41,18 +42,13 @@ def main():
                 robot_x, robot_y = coordinates_transformation.calc_robot_coordinates(center[0], center[1])
                 print(robot_x, robot_y)
                 memory.add(robot_x, robot_y)
-                # circle center
-                #cv.circle(gray, center, 1, (0, 100, 100), 3)
-                # circle outline
-                #radius = i[2]
-                #cv.circle(gray, center, radius, (255, 0, 255), 3)
-                # Angriff erkennen
 
             puck_x, puck_y = [], []
             striker_x, striker_y = [], []
-                # Reaktionslogik: Blocken?
+            # Get ladest puck position
             puck_current = memory.latest(1)[0]
             puck_previous = memory.latest(2)[0]
+            # Check for attack
             attack = detect_attack(memory, puck_current, puck_previous)
             if attack:
                 print("\u26a0\ufe0f Attack detected!")
@@ -68,13 +64,6 @@ def main():
             striker_x.append(striker_position[0])
             striker_y.append(striker_position[1])
             time.sleep(0.1)
-
-
-            #                if puck_pos:
-            #                    intercept, direction, t = controller.find_reachable_intercept_point(puck_pos[0])
-            #                    if intercept:
-            #                        print(f"Abwehr bei {intercept} in {t:.2f}s")
-            # UDP senden
 
         # Display the resulting frame
         cv.imshow('frame', gray)
